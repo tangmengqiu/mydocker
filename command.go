@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"mydocker/container"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 var runCommand = cli.Command{
 	Name: "run",
 	Usage: `Create a container with namespace and cgroups limit
-			mydocker run -ti [command]`,
+		mydocker run -ti [command]`,
 	Flags: []cli.Flag{
 		cli.BoolFlag{
 			Name:  "ti",
