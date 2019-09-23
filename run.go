@@ -1,17 +1,37 @@
 package main
 
 import (
+	"mydocker/cgroups"
+	"mydocker/cgroups/subsystems"
 	"mydocker/container"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(tty bool, command string) {
-	parent := container.NewParentProcess(tty, command)
+func Run(tty bool, comArry []string, res *subsystems.ResourceConfig) {
+	parent, writePipe := container.NewParentProcess(tty)
+	if parent == nil {
+		log.Errorf("New parent process error")
+		return
+	}
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
+	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
+	defer cgroupManager.Destory()
+	cgroupManager.Set(res)
+	cgroupManager.Apply(parent.Process.Pid)
+
+	sendInitCommand(comArry, writePipe)
+
 	parent.Wait()
-	os.Exit(-1)
+}
+
+func sendInitCommand(comArray []string, writePipe *os.File) {
+	command := strings.Join(comArray, " ")
+	log.Infof("command all is :%s", command)
+	writePipe.WriteString(command)
+	writePipe.Close()
 }
