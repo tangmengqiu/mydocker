@@ -45,7 +45,7 @@ var runCommand = cli.Command{
 			CpuSet:      context.String("cpuset"),
 			CpuShare:    context.String("cpushare"),
 		}
-		Run(tty, cmd, resConf)
+		Run(tty, cmdArray, resConf)
 		return nil
 	},
 }
