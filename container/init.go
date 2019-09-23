@@ -5,10 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -56,12 +57,12 @@ func setUpMount() {
 	syscall.Mount("tmpfs", "/dev", "tmpfs", syscall.MS_NOSUID|syscall.MS_STRICTATIME, "mode=755")
 }
 
-func pivotRoot(root string) {
-	if err:=syscall.Mount(root,root,"bind",syscall.MS_BIND|syscall.MS_REC, "");err!=nil{
+func pivotRoot(root string) error {
+	if err := syscall.Mount(root, root, "bind", syscall.MS_BIND|syscall.MS_REC, ""); err != nil {
 		return fmt.Errorf("Mount rootfs to itself error: %v", err)
 	}
 
-	pivDir:=filepath.Join(root,".pivot_root")
+	pivotDir := filepath.Join(root, ".pivot_root")
 	if err := os.Mkdir(pivotDir, 0777); err != nil {
 		return err
 	}
@@ -72,7 +73,7 @@ func pivotRoot(root string) {
 	if err := syscall.Chdir("/"); err != nil {
 		return fmt.Errorf("chdir / %v", err)
 	}
-	pivotDir = filepath.Join("/", ".pivot_root")
+	pivotDir = path.Join("/", ".pivot_root")
 	if err := syscall.Unmount(pivotDir, syscall.MNT_DETACH); err != nil {
 		return fmt.Errorf("unmount pivot_root dir %v", err)
 	}
